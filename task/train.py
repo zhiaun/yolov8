@@ -5,4 +5,4 @@ from ultralytics import YOLO
 model = YOLO("yolov8n.pt")  # load a pretrained model (recommended for training)
 
 # Use the model
-results = model.train(data="./datasets/RFT.yaml", epochs=100,imgsz=416,device='cpu')  # train the model
+results = model.train(data="./datasets/RFT.yaml", epochs=1,imgsz=416,device='cpu')  # train the model

@@ -1,13 +1,14 @@
 from ultralytics import YOLO
 import cv2
+import yaml
 #import numpy as np
 
 # 加载训练好的模型
 #model = YOLO('./yolov8n.pt')
-model = YOLO('./runs/detect/train/weights/best.pt')
+model = YOLO('./best.pt')
 
 # 进行单张图像推理
-image_path = './task/bus.jpg'
+image_path = './task/000233.jpg'
 results = model.predict(source=image_path)
 
 # 读取原始图像
@@ -26,11 +27,15 @@ for result in results:
             cls = int(box.cls[0])
             conf = float(box.conf[0])
 
+            with open('./datasets/RFT.yaml', 'r') as f:
+                data = yaml.safe_load(f)
+            names = data['names']
+
             # 绘制边界框
             cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
             # 准备标签文本
-            label = f'{cls}: {conf:.2f}'
+            label = f'{names[cls]}: {conf:.2f}'
 
             # 绘制标签背景
             (label_width, label_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
