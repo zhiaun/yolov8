@@ -4,6 +4,9 @@ import numpy as np
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox,QGridLayout
 from PyQt5.QtCore import QTimer,Qt, QTime
 from PyQt5.QtGui import QImage, QPixmap
+from predict import yolo8_pred
+
+
 
 class VideoWindow(QMainWindow):
     def __init__(self):
@@ -125,11 +128,13 @@ class VideoWindow(QMainWindow):
         self.export_button.setEnabled(False)
         self.frame_ms = 31
         self.is_sec = False
+        self.img_path = './default.jpg'
         #加载完成
         self.chkTimer.start(500)
 
     def cls_result(self):
         self.sign = 'None'
+        self.meth_sta.setText("无")
         if self.cap is not None and self.cap.isOpened():
             self.cap.release()
             self.cap = None
@@ -239,15 +244,16 @@ class VideoWindow(QMainWindow):
                 self.video_path = None
                 image = cv2.imread(file_path)
                 if image is not None:
+                    self.img_path = file_path
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                    h, w, ch = image.shape
-                    bytes_per_line = ch * w
-                    qt_image = QImage(image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-                    pixmap = QPixmap.fromImage(qt_image)
-                    self.original_image_label.setPixmap(pixmap)
+                    self.display_image(image,self.original_image_label)
                     self.sign = 'Pic'
-                    proced_pixmap = self.process_frame(image)
-                    self.display_image(proced_pixmap,self.processed_image_label)
+
+                    proced_img = yolo8_pred(file_path)
+                    self.meth_sta.setText("YOLO v8")
+                    proced_img = cv2.cvtColor(proced_img, cv2.COLOR_BGR2RGB)
+                    self.display_image(proced_img,self.processed_image_label)
+                    #self.processed_image_label.setPixmap(proced_pixmap)
                 else:
                     QMessageBox.warning(self, "错误", "无法加载图像文件")
     # 实时模式-按钮响应
