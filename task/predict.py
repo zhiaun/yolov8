@@ -2,9 +2,9 @@ from ultralytics import YOLO
 import cv2
 import yaml
 
-
-def yolo8_pred(image_path):
+def yolo8_ready():
     model = YOLO('./best.pt')
+def yolo8_pred(image_path):
     results = model.predict(source=image_path)
     # 读取原始图像
     image = cv2.imread(image_path)
