@@ -4,7 +4,7 @@ import numpy as np
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox,QGridLayout
 from PyQt5.QtCore import QTimer,Qt, QTime
 from PyQt5.QtGui import QImage, QPixmap,QFont
-from predict import yolo8_pred,yolo8_ready
+#from predict import yolo8_pred,yolo8_ready
 from ultralytics import YOLO
 import yaml
 

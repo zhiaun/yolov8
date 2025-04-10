@@ -133,6 +133,13 @@ datasets/
 runs/
 wandb/
 
+doc/*
+docker/*
+examples/*
+
+
+
+
 .DS_Store
 
 # Neural Network weights -----------------------------------------------------------------------------------------------
