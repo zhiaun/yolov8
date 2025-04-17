@@ -1,0 +1,7 @@
+path: D:/Code/yolo8/datasets
+train: ./oc/images/train
+val: ./oc/valid
+test: ./oc/test
+
+nc: 3
+names: ['Plants', 'other', 'Plastic']
