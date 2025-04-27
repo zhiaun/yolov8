@@ -134,6 +134,7 @@ wandb/
 doc/*
 docker/*
 examples/*
+datasets/ocean/*
 
 
 
