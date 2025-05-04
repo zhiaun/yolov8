@@ -1,3 +1,0 @@
-['bottle', 'grass', 'branch','milk-box','plastic-bag','plastic-garbage','ball','leaf']
-
-names: ['bottle', 'grass', 'branch','milk-box','plastic-bag','plastic-garbage','ball','leaf']
