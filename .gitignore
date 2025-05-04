@@ -130,7 +130,7 @@ dmypy.json
 
 # datasets and projects
 wandb/
-
+datasets/*
 doc/*
 docker/*
 examples/*
