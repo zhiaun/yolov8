@@ -4,4 +4,4 @@ val: ./ocean3/ocean/images/valid
 test: ./ocean3/ocean/images/test
 
 nc: 3
-names: ['Plants', 'other', 'Plastic']
+names: ['Bio', 'Other', 'N-Bio']

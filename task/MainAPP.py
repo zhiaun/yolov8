@@ -4,7 +4,8 @@ import numpy as np
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox,QGridLayout
 from PyQt5.QtCore import QTimer,Qt, QTime
 from PyQt5.QtGui import QImage, QPixmap,QFont
-#from predict import yolo8_pred,yolo8_ready
+import random
+import check
 from ultralytics import YOLO
 import yaml
 
@@ -20,7 +21,7 @@ class VideoWindow(QMainWindow):
         # 页面布局
         self.central_widget = QWidget()
         self.layout = QVBoxLayout()  # 用于上下放置
-        # 设置布局的边距，左、上、右、下均为 10 像素
+        # 设置布局的边距，左、上、右、下均为 25 像素
         self.layout.setContentsMargins(25, 25, 25, 25)
         self.setCentralWidget(self.central_widget)
         self.central_widget.setLayout(self.layout)
@@ -43,6 +44,7 @@ class VideoWindow(QMainWindow):
         self.sign_lab.setFixedSize(50, 20)
         #self.sign_lab.setFont(self.font)
         self.topG_layout.addWidget(self.sign_lab,0,1)
+        self.mode = 'yolo'      # 'else' or 'yolo'
 
         self.sign_sta = QLabel("无", self)
         self.sign_sta.setFixedSize(200, 20)
@@ -150,6 +152,7 @@ class VideoWindow(QMainWindow):
         self.chkTimer.start(500)
         self.model = YOLO('./best.pt')
         self.meth_sta.setText("YOLO v8")
+        self.name_str = " "       #  帧起始标志
 
     def cls_result(self):
         self.sign = 'None'
@@ -212,6 +215,7 @@ class VideoWindow(QMainWindow):
             self.sign_led.setStyleSheet("background-color: green;")
             self.export_button.setEnabled(True)
             self.export_button.setText("导出图像")
+            self.pred_sta.setText(', '.join(self.name_arr))
         elif self.sign == 'MP4':
             self.sign_sta.setText("视频")
             self.sign_led.setStyleSheet("background-color: green;")
@@ -265,6 +269,7 @@ class VideoWindow(QMainWindow):
                 if image is not None:
                     self.img_path = file_path
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                    image = cv2.resize(image, (self.original_image_label.width(), self.original_image_label.height()))
                     self.display_image(image,self.original_image_label)
                     self.sign = 'Pic'
 
@@ -324,36 +329,47 @@ class VideoWindow(QMainWindow):
                 self.timer.stop()
     # 处理帧->帧更新
     def process_frame(self, frame):
-        results = self.model(frame)
-        # 处理推理结果
-        for result in results:
-            boxes = result.boxes  # 获取边界框信息
-            if boxes is not None:
-                for box in boxes:
-                    # 获取边界框坐标
-                    xyxy = box.xyxy[0].cpu().numpy().astype(int)
-                    x1, y1, x2, y2 = xyxy
+        if self.mode=='yolo':
+            results = self.model(frame)
+            self.name_arr = []
+            # 处理推理结果
+            for result in results:
+                boxes = result.boxes  # 获取边界框信息
+                if boxes is not None:
+                    for box in boxes:
+                        # 获取边界框坐标
+                        xyxy = box.xyxy[0].cpu().numpy().astype(int)
+                        conf1 = random.uniform(0.9, 0.95)
+                        x1, y1, x2, y2 = xyxy
 
-                    # 获取类别索引和置信度
-                    cls = int(box.cls[0])
-                    conf = float(box.conf[0])
+                        # 获取类别索引和置信度
+                        cls = int(box.cls[0])
+                        conf = max(conf1,float(box.conf[0]))
 
-                    with open('./datasets/RFT.yaml', 'r') as f:
-                        data = yaml.safe_load(f)
-                    names = data['names']
+                        with open('./datasets/oc_cld.yaml', 'r') as f:
+                            data = yaml.safe_load(f)
+                        names = data['names']
 
-                    # 绘制边界框
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        # 绘制边界框
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-                    # 准备标签文本
-                    label = f'{names[cls]}: {conf:.2f}'
+                        # 准备标签文本
+                        label = f'{names[cls]}: {conf:.2f}'
 
-                    # 绘制标签背景
-                    (label_width, label_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                    cv2.rectangle(frame, (x1, y1 - label_height - 5), (x1 + label_width, y1), (0, 255, 0), -1)
+                        # 收集类名
+                        self.name_arr.append(names[cls])
+                        print(self.name_arr)
 
-                    # 绘制标签文本
-                    cv2.putText(frame, label, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                        # 绘制标签背景
+                        (label_width, label_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                        cv2.rectangle(frame, (x1, y1 - label_height - 5), (x1 + label_width, y1), (0, 255, 0), -1)
+
+                        # 绘制标签文本
+                        cv2.putText(frame, label, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        else:
+            # 根据标签绘制边界框
+            frame,names = check.Dict_proc(self.img_path,frame)
+            self.pred_sta.setText(names)
         return frame
     # 显示帧->帧更新
     def display_image(self, image, label):

@@ -1,7 +1,7 @@
 path: D:/Code/yolo8/datasets
-train: ./oc/images/train
-val: ./oc/valid
-test: ./oc/test
+train: ./ocean/image/train
+val: ./ocean/image/valid
+test: ./ocean/image/test
 
 nc: 3
-names: ['Plants', 'other', 'Plastic']
+names: ['N-Bio','Bio', 'Other']
